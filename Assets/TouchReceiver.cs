@@ -17,6 +17,7 @@ public partial class TouchReceiver : MonoBehaviour
     GestureState currentState = GestureState.None;
     public TouchPoint FirstTouchPoint { get; set; }
     public TouchPoint SecondTouchPoint { get; set; }
+    public float initialDistance { get; set; }
     void Start()
     {
     }
@@ -49,10 +50,25 @@ public partial class TouchReceiver : MonoBehaviour
             if (myCursor.getCursorID() == 0)
             {
                 FirstTouchPoint = new TouchPoint(myCursor);
+                //Restarting if the first touch was let go off
+                initialDistance = 0f;
             }
             if (myCursor.getCursorID() == 1)
             {
                 SecondTouchPoint = new TouchPoint(myCursor);
+                Vector3 firstVector = new Vector3(FirstTouchPoint.X, FirstTouchPoint.Y);
+                Vector3 secondVector = new Vector3(SecondTouchPoint.X, SecondTouchPoint.Y);
+                if (initialDistance == 0f) {
+                    initialDistance = (firstVector - secondVector).magnitude;
+                } else {
+                    Vector3 distanceVector = firstVector - secondVector;
+                    if (initialDistance > distanceVector.magnitude) {
+                        this.transform.localScale += distanceVector;
+                    } else {
+                        this.transform.localScale -= distanceVector;
+                    }
+                }
+                
             }
         }
     }
