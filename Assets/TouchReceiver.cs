@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+
+using UnityEngine;
 using System.Collections;
 using TUIO;
 using System.Collections.Generic;
@@ -18,8 +19,12 @@ public partial class TouchReceiver : MonoBehaviour
     public TouchPoint FirstTouchPoint { get; set; }
     public TouchPoint SecondTouchPoint { get; set; }
     public float initialDistance { get; set; }
+
+    private Vector3 initialScale = Vector3.zero;
+
     void Start()
     {
+        Vector3 initialScale = this.transform.localScale;
     }
 
     void Update()
@@ -36,6 +41,8 @@ public partial class TouchReceiver : MonoBehaviour
         {
             this.transform.position = FirstTouchPoint.fromTUIO();
         }
+
+
     }
 
     /// <summary>
@@ -52,21 +59,22 @@ public partial class TouchReceiver : MonoBehaviour
                 FirstTouchPoint = new TouchPoint(myCursor);
                 //Restarting if the first touch was let go off
                 initialDistance = 0f;
+                initialScale = this.transform.localScale;
             }
             if (myCursor.getCursorID() == 1)
             {
                 SecondTouchPoint = new TouchPoint(myCursor);
                 Vector3 firstVector = new Vector3(FirstTouchPoint.X, FirstTouchPoint.Y);
                 Vector3 secondVector = new Vector3(SecondTouchPoint.X, SecondTouchPoint.Y);
+                
                 if (initialDistance == 0f) {
-                    initialDistance = (firstVector - secondVector).magnitude;
+                    initialDistance = Vector3.Distance(secondVector, firstVector);
                 } else {
-                    Vector3 distanceVector = firstVector - secondVector;
-                    if (initialDistance > distanceVector.magnitude) {
-                        this.transform.localScale += distanceVector;
-                    } else {
-                        this.transform.localScale -= distanceVector;
-                    }
+                    float distance = Vector3.Distance(secondVector, firstVector);
+                    float scale = distance/initialDistance;
+                    //clip, so image cannot disappear, or become too large
+                    scale = Mathf.Clamp(scale, 0.2f, 3f);
+                    this.transform.localScale = initialScale * scale;
                 }
                 
             }
@@ -95,3 +103,4 @@ public partial class TouchReceiver : MonoBehaviour
                                 new Vector3(0.05f, 0.05f, 0.05f)), currentMat, 0);
     }
 }
+
