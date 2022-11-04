@@ -21,6 +21,7 @@ public partial class TouchReceiver : MonoBehaviour
     public float initialDistance { get; set; }
 
     private Vector3 initialScale = Vector3.zero;
+    private Vector3 firstVecRot  = Vector3.zero;
 
     void Start()
     {
@@ -41,8 +42,6 @@ public partial class TouchReceiver : MonoBehaviour
         {
             this.transform.position = FirstTouchPoint.fromTUIO();
         }
-
-
     }
 
     /// <summary>
@@ -60,20 +59,24 @@ public partial class TouchReceiver : MonoBehaviour
                 //Restarting if the first touch was let go off
                 initialDistance = 0f;
                 initialScale = this.transform.localScale;
+
             }
             if (myCursor.getCursorID() == 1)
             {
                 SecondTouchPoint = new TouchPoint(myCursor);
                 Vector3 firstVector = new Vector3(FirstTouchPoint.X, FirstTouchPoint.Y);
                 Vector3 secondVector = new Vector3(SecondTouchPoint.X, SecondTouchPoint.Y);
-                
+
                 if (initialDistance == 0f) {
                     initialDistance = Vector3.Distance(secondVector, firstVector);
+                    firstVecRot = FirstTouchPoint.fromTUIO()-SecondTouchPoint.fromTUIO();
                 } else {
+                    Vector3 secondVecRot = FirstTouchPoint.fromTUIO()-SecondTouchPoint.fromTUIO();
+                    transform.rotation = Quaternion.FromToRotation(firstVecRot, secondVecRot);
+                    
                     float distance = Vector3.Distance(secondVector, firstVector);
                     float scale = distance/initialDistance;
-                    //clip, so image cannot disappear, or become too large
-                    scale = Mathf.Clamp(scale, 0.2f, 3f);
+                    scale = Mathf.Clamp(scale, 0.1f, 10f);
                     this.transform.localScale = initialScale * scale;
                 }
                 
@@ -103,4 +106,3 @@ public partial class TouchReceiver : MonoBehaviour
                                 new Vector3(0.05f, 0.05f, 0.05f)), currentMat, 0);
     }
 }
-
